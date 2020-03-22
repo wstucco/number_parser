@@ -10,7 +10,9 @@ defmodule NumberParser do
   decimal_sep = string(",")
   thousands_sep = string(".")
   num_range = [?0..?9]
-  decimal_part = decimal_sep |> concat(int)
+  num_string = utf8_string(num_range, min: 1)
+  e_part = string("e") |> concat(int)
+  decimal_part = decimal_sep |> concat(num_string) |> concat(optional(e_part))
 
   thousands_part =
     utf8_string(num_range, min: 1, max: 3)
@@ -61,14 +63,26 @@ defmodule NumberParser do
 
   # parse floats like 11,25
   defp to_number_value(_, [right, ",", left], context, _, _)
-       when is_integer(left) and is_integer(right) do
+       when is_integer(left) and is_binary(right) do
     {[String.to_float("#{left}.#{right}")], context}
   end
 
-  # parse floats with thousands separator and decimals: 12.000,2
+  # parse floats like 1,25e3
+  defp to_number_value(_, [exp, "e", right, ",", left], context, _, _)
+       when is_integer(left) and is_binary(right) and is_integer(exp) do
+    {[String.to_float("#{left}.#{right}e#{exp}")], context}
+  end
+
+  # parse floats with thousands separator and decimals like 12.000,2
   defp to_number_value(_, [decimal_part, "," | tail], context, _, _) do
     int_part = tail |> Enum.reverse() |> Enum.join("")
     {[String.to_float("#{int_part}.#{decimal_part}")], context}
+  end
+
+  # parse floats with thousands separator and decimals like 1.152,921504606847e15
+  defp to_number_value(_, [exp, "e", decimal_part, "," | tail], context, _, _) do
+    int_part = tail |> Enum.reverse() |> Enum.join("")
+    {[String.to_float("#{int_part}.#{decimal_part}e#{exp}")], context}
   end
 
   # parse ints with thousands separator like 2.450
