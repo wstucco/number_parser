@@ -44,6 +44,8 @@ defmodule NumberParser do
     {:ok, 89000}
     iex> NumberParser.parse("89.000,12")
     {:ok, 89000.12}
+    iex> NumberParser.parse("89.000,12e1")
+    {:ok, 890001.2}
     iex> NumberParser.parse("89.91")
     {:error, "expected end of string", ".91"}
   """
