@@ -78,30 +78,32 @@ defmodule NumberParser do
 
   # parse floats with decimals like 12.000,2 or 11,25
   defp to_number_value(_, [decimal_part, "," | tail], context, _, _) do
-    integer_part = tail |> Enum.reverse() |> Enum.join("")
+    integer_part = make_integer_part(tail)
     {[String.to_float("#{integer_part}.#{decimal_part}")], context}
   end
 
-  # parse floats with exponential notation like 1,25-e3
+  # parse floats with exponential notation like 1,25e3
   defp to_number_value(_, [exp, "e", decimal_part, "," | tail], context, _, _) do
-    num = from_exponential_notation(tail, decimal_part, exp, "+")
-    {[num], context}
+    integer_part = make_integer_part(tail)
+    decimal_part = make_decimal_part(decimal_part, exp)
+    {[String.to_float("#{integer_part}.#{decimal_part}")], context}
   end
 
-  # parse floats with negative exponential notation like 1,25e-3
+  # parse floats with sign before the exponent like 1,25e-3 or 1,25e+3
   defp to_number_value(_, [exp, sign, "e", decimal_part, "," | tail], context, _, _) do
-    num = from_exponential_notation(tail, decimal_part, exp, sign)
-    {[num], context}
+    integer_part = make_integer_part(tail)
+    decimal_part = make_decimal_part(decimal_part, exp, sign)
+    {[String.to_float("#{integer_part}.#{decimal_part}")], context}
   end
 
   # parse ints with thousands separator like 2.450
   defp to_number_value(_, args, context, _, _) do
-    integer_part = args |> Enum.reverse() |> Enum.join("")
-    {[String.to_integer(integer_part)], context}
+    {[args |> make_integer_part() |> String.to_integer()], context}
   end
 
-  defp from_exponential_notation(integer_parts, decimal_part, exp, sign) do
-    integer_part = integer_parts |> Enum.reverse() |> Enum.join("")
-    String.to_float("#{integer_part}.#{decimal_part}e#{sign}#{exp}")
-  end
+  defp make_integer_part(integer_parts) when is_list(integer_parts),
+    do: integer_parts |> Enum.reverse() |> Enum.join("")
+
+  defp make_decimal_part(decimal_part, exp, sign \\ ""),
+    do: ~s/#{decimal_part}e#{sign}#{exp}/
 end
