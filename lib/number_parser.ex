@@ -10,14 +10,14 @@ defmodule NumberParser do
   decimal_sep = string(",")
   thousands_sep = string(".")
   num_range = [?0..?9]
-  num_string = utf8_string(num_range, min: 1)
+  num_string = ascii_string(num_range, min: 1)
   integer_part = concat(optional(string("-")), int)
   e_part = string("e") |> concat(int)
   decimal_part = decimal_sep |> concat(num_string) |> concat(optional(e_part))
 
-  thousands_part =
-    utf8_string(num_range, min: 1, max: 3)
-    |> concat(repeat(ignore(thousands_sep) |> concat(utf8_string(num_range, 3))))
+  thousands_start = concat(optional(string("-")), integer(min: 1, max: 3))
+  thousands_triplets = repeat(ignore(thousands_sep) |> concat(ascii_string(num_range, 3)))
+  thousands_part = thousands_start |> concat(thousands_triplets)
 
   defcombinatorp(
     :number,
@@ -47,6 +47,8 @@ defmodule NumberParser do
     {:ok, 89000.12}
     iex> NumberParser.parse("89.000,12e1")
     {:ok, 890001.2}
+    iex> NumberParser.parse("-89.000,12e1")
+    {:ok, -890001.2}
     iex> NumberParser.parse("89.91")
     {:error, "expected end of string", ".91"}
   """
