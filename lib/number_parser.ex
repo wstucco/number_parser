@@ -20,14 +20,15 @@ defmodule NumberParser do
   decimal_part = decimal_sep |> concat(num_string) |> concat(optional(e_part))
 
   thousands_start = concat(sign_part, integer(min: 1, max: 3))
-  thousands_triplets = repeat(ignore(thousands_sep) |> concat(ascii_string(num_range, 3)))
+  thousad_triplet = ascii_string(num_range, 3)
+  thousands_triplets = times(ignore(thousands_sep) |> concat(thousad_triplet), min: 1)
   thousands_part = thousands_start |> concat(thousands_triplets)
 
   defcombinatorp(
     :number,
     choice([
-      integer_part |> concat(decimal_part),
       thousands_part |> concat(decimal_part),
+      integer_part |> concat(decimal_part),
       thousands_part,
       integer_part
     ])
