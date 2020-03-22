@@ -1,4 +1,4 @@
-defmodule ParseItNumTest do
+defmodule NumberParserTest do
   use ExUnitProperties
   use ExUnit.Case
   doctest NumberParser

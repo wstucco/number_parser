@@ -1,9 +1,9 @@
-defmodule ParseItNum.MixProject do
+defmodule NumberParser.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :parse_it_num,
+      app: :number_parser,
       version: "0.1.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
