@@ -51,6 +51,15 @@ defmodule ParseItNumTest do
     end
   end
 
+  property "scientific notation accepts positive and negative exponents" do
+    check all sign <- signs(),
+              left <- positive_integer(),
+              right <- string(?0..?9, min_length: 1) do
+      num = String.to_float("#{left}.#{right}e#{sign}2")
+      assert NumberParser.parse("#{left},#{right}e#{sign}2") == {:ok, num}
+    end
+  end
+
   defp signs do
     one_of([constant("-"), constant("+")])
   end

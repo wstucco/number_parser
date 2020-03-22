@@ -76,18 +76,6 @@ defmodule NumberParser do
     {[num], context}
   end
 
-  # # parse floats like 11,25
-  # defp to_number_value(_, [right, ",", left], context, _, _)
-  #      when is_integer(left) and is_binary(right) do
-  #   {[String.to_float("#{left}.#{right}")], context}
-  # end
-
-  # # parse floats like 1,25e3
-  # defp to_number_value(_, [exp, "e", right, ",", left], context, _, _)
-  #      when is_integer(left) and is_binary(right) and is_integer(exp) do
-  #   {[String.to_float("#{left}.#{right}e#{exp}")], context}
-  # end
-
   # parse floats with decimals like 12.000,2 or 11,25
   defp to_number_value(_, [decimal_part, "," | tail], context, _, _) do
     integer_part = tail |> Enum.reverse() |> Enum.join("")
@@ -101,8 +89,8 @@ defmodule NumberParser do
   end
 
   # parse floats with negative exponential notation like 1,25e-3
-  defp to_number_value(_, [exp, "-", "e", decimal_part, "," | tail], context, _, _) do
-    num = from_exponential_notation(tail, decimal_part, exp, "-")
+  defp to_number_value(_, [exp, sign, "e", decimal_part, "," | tail], context, _, _) do
+    num = from_exponential_notation(tail, decimal_part, exp, sign)
     {[num], context}
   end
 
@@ -117,10 +105,3 @@ defmodule NumberParser do
     String.to_float("#{integer_part}.#{decimal_part}e#{sign}#{exp}")
   end
 end
-
-# defmodule MyParser do
-#   import NimbleParsec
-#   int = integer(min: 1)
-
-#   defparsec(:test, string("e") |> concat(int) |> eos(), debug: true)
-# end
