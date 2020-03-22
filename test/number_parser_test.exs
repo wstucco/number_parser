@@ -35,8 +35,8 @@ defmodule ParseItNumTest do
                    {:ok, String.to_integer("#{sign}#{left}#{right}")}
 
         _ ->
-          assert {:error, "expected end of string", _} =
-                   NumberParser.parse("#{sign}#{left}.#{right}")
+          {:error, reason} = NumberParser.parse("#{sign}#{left}.#{right}")
+          assert reason == "invalid number format #{sign}#{left}.#{right}"
       end
     end
   end

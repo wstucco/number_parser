@@ -60,11 +60,11 @@ defmodule NumberParser do
     iex> NumberParser.parse("-89.000,12e-1")
     {:ok, -8900.012}
     iex> NumberParser.parse("89.91")
-    {:error, "expected end of string", ".91"}
+    {:error, "invalid number format 89.91"}
   """
   def parse(term) when is_binary(term) do
     case parse_number(term) do
-      {:error, reason, rest, _, _, _} -> {:error, reason, rest}
+      {:error, _, _, _, _, _} -> {:error, "invalid number format #{term}"}
       {:ok, [val], _, _, _, _} -> {:ok, val}
     end
   end
