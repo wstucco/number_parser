@@ -16,6 +16,44 @@ Germany, Greece, Indonesia, Italy, Netherlands, Romania, Slovenia, Spain, Turkey
 I wrote this parser mainly as an excercise to learn how to use the [Nimble Parsec](https://github.com/dashbitco/nimble_parsec) library.
 
 
+## Usage
+
+```elixir
+NumberParser.parse(input)
+```
+
+Returns `{:ok, number}` in case of success or  `{:error, reason}` if the parser can't make sense of the input.
+
+```elixir
+iex> NumberParser.parse("89")
+{:ok, 89}
+
+iex> NumberParser.parse("89,91")
+{:ok, 89.91}
+
+iex> NumberParser.parse("89.000")
+{:ok, 89000}
+
+iex> NumberParser.parse("89.000,12")
+{:ok, 89000.12}
+
+iex> NumberParser.parse("89.000,12e1")
+{:ok, 890001.2}
+
+iex> NumberParser.parse("-89.000,12e1")
+{:ok, -890001.2}
+
+iex> NumberParser.parse("+89.000,12e1")
+{:ok, 890001.2}
+
+iex> NumberParser.parse("-89.000,12e-1")
+{:ok, -8900.012}
+
+iex> NumberParser.parse("89.91")
+{:error, "invalid number format 89.91"}
+```    
+
+
 
 
 ## Installation
