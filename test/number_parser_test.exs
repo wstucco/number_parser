@@ -17,7 +17,7 @@ defmodule ParseItNumTest do
   end
 
   property "thousands separator appear before triplets" do
-    check all sign <- frequency([{1, constant("-")}, {1, constant("")}]),
+    check all sign <- signs(),
               left <- string(?1..?9, min_length: 1, max_length: 3),
               right <- string(?0..?9, length: 3) do
       assert NumberParser.parse("#{sign}#{left}.#{right}") ==
@@ -26,7 +26,7 @@ defmodule ParseItNumTest do
   end
 
   property "thousands separator can appear only before triplets" do
-    check all sign <- frequency([{1, constant("-")}, {1, constant("")}]),
+    check all sign <- signs(),
               left <- string(?1..?9, min_length: 1),
               right <- string(?0..?9, min_length: 1) do
       case {String.length(left) <= 3, String.length(right) == 3} do
@@ -48,5 +48,9 @@ defmodule ParseItNumTest do
       num = String.to_float("#{left}#{right}.#{decimal}")
       assert NumberParser.parse("#{left}.#{right},#{decimal}") == {:ok, num}
     end
+  end
+
+  defp signs do
+    frequency([{1, constant("-")}, {1, constant("+")}])
   end
 end

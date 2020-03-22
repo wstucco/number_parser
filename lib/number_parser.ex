@@ -9,13 +9,17 @@ defmodule NumberParser do
   int = integer(min: 1)
   decimal_sep = string(",")
   thousands_sep = string(".")
+  plus_sing = string("+")
+  minus_sign = string("-")
+  sign = choice([plus_sing, minus_sign])
   num_range = [?0..?9]
   num_string = ascii_string(num_range, min: 1)
-  integer_part = concat(optional(string("-")), int)
+  sign_part = optional(sign)
+  integer_part = concat(sign_part, int)
   e_part = string("e") |> concat(int)
   decimal_part = decimal_sep |> concat(num_string) |> concat(optional(e_part))
 
-  thousands_start = concat(optional(string("-")), integer(min: 1, max: 3))
+  thousands_start = concat(sign_part, integer(min: 1, max: 3))
   thousands_triplets = repeat(ignore(thousands_sep) |> concat(ascii_string(num_range, 3)))
   thousands_part = thousands_start |> concat(thousands_triplets)
 
@@ -49,6 +53,8 @@ defmodule NumberParser do
     {:ok, 890001.2}
     iex> NumberParser.parse("-89.000,12e1")
     {:ok, -890001.2}
+    iex> NumberParser.parse("+89.000,12e1")
+    {:ok, 890001.2}
     iex> NumberParser.parse("89.91")
     {:error, "expected end of string", ".91"}
   """
