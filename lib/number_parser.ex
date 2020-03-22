@@ -14,10 +14,11 @@ defmodule NumberParser do
   sign = choice([plus_sing, minus_sign])
   num_range = [?0..?9]
   num_string = ascii_string(num_range, min: 1)
+
   sign_part = optional(sign)
   integer_part = concat(sign_part, int)
-  e_part = string("e") |> concat(int)
-  decimal_part = decimal_sep |> concat(num_string) |> concat(optional(e_part))
+  e_part = optional(string("e") |> concat(integer_part))
+  decimal_part = decimal_sep |> concat(num_string) |> concat(e_part)
 
   thousands_start = concat(sign_part, integer(min: 1, max: 3))
   thousad_triplet = ascii_string(num_range, 3)
@@ -56,6 +57,8 @@ defmodule NumberParser do
     {:ok, -890001.2}
     iex> NumberParser.parse("+89.000,12e1")
     {:ok, 890001.2}
+    iex> NumberParser.parse("-89.000,12e-1")
+    {:ok, -8900.012}
     iex> NumberParser.parse("89.91")
     {:error, "expected end of string", ".91"}
   """
@@ -73,33 +76,51 @@ defmodule NumberParser do
     {[num], context}
   end
 
-  # parse floats like 11,25
-  defp to_number_value(_, [right, ",", left], context, _, _)
-       when is_integer(left) and is_binary(right) do
-    {[String.to_float("#{left}.#{right}")], context}
-  end
+  # # parse floats like 11,25
+  # defp to_number_value(_, [right, ",", left], context, _, _)
+  #      when is_integer(left) and is_binary(right) do
+  #   {[String.to_float("#{left}.#{right}")], context}
+  # end
 
-  # parse floats like 1,25e3
-  defp to_number_value(_, [exp, "e", right, ",", left], context, _, _)
-       when is_integer(left) and is_binary(right) and is_integer(exp) do
-    {[String.to_float("#{left}.#{right}e#{exp}")], context}
-  end
+  # # parse floats like 1,25e3
+  # defp to_number_value(_, [exp, "e", right, ",", left], context, _, _)
+  #      when is_integer(left) and is_binary(right) and is_integer(exp) do
+  #   {[String.to_float("#{left}.#{right}e#{exp}")], context}
+  # end
 
-  # parse floats with thousands separator and decimals like 12.000,2
+  # parse floats with decimals like 12.000,2 or 11,25
   defp to_number_value(_, [decimal_part, "," | tail], context, _, _) do
-    int_part = tail |> Enum.reverse() |> Enum.join("")
-    {[String.to_float("#{int_part}.#{decimal_part}")], context}
+    integer_part = tail |> Enum.reverse() |> Enum.join("")
+    {[String.to_float("#{integer_part}.#{decimal_part}")], context}
   end
 
-  # parse floats with thousands separator and decimals like 1.152,921504606847e15
+  # parse floats with exponential notation like 1,25-e3
   defp to_number_value(_, [exp, "e", decimal_part, "," | tail], context, _, _) do
-    int_part = tail |> Enum.reverse() |> Enum.join("")
-    {[String.to_float("#{int_part}.#{decimal_part}e#{exp}")], context}
+    num = from_exponential_notation(tail, decimal_part, exp, "+")
+    {[num], context}
+  end
+
+  # parse floats with negative exponential notation like 1,25e-3
+  defp to_number_value(_, [exp, "-", "e", decimal_part, "," | tail], context, _, _) do
+    num = from_exponential_notation(tail, decimal_part, exp, "-")
+    {[num], context}
   end
 
   # parse ints with thousands separator like 2.450
   defp to_number_value(_, args, context, _, _) do
-    int_part = args |> Enum.reverse() |> Enum.join("")
-    {[String.to_integer(int_part)], context}
+    integer_part = args |> Enum.reverse() |> Enum.join("")
+    {[String.to_integer(integer_part)], context}
+  end
+
+  defp from_exponential_notation(integer_parts, decimal_part, exp, sign) do
+    integer_part = integer_parts |> Enum.reverse() |> Enum.join("")
+    String.to_float("#{integer_part}.#{decimal_part}e#{sign}#{exp}")
   end
 end
+
+# defmodule MyParser do
+#   import NimbleParsec
+#   int = integer(min: 1)
+
+#   defparsec(:test, string("e") |> concat(int) |> eos(), debug: true)
+# end

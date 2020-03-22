@@ -1,6 +1,6 @@
 defmodule ParseItNumTest do
-  use ExUnit.Case
   use ExUnitProperties
+  use ExUnit.Case
   doctest NumberParser
 
   property "an integer is alwaysed parsed as integer" do
@@ -10,7 +10,7 @@ defmodule ParseItNumTest do
   end
 
   property "a number containing a single comma is converted to float" do
-    check all num <- float() do
+    check all num <- float(), initial_seed: 192_778 do
       num_string = to_string(num) |> String.replace(".", ",")
       assert NumberParser.parse(num_string) == {:ok, num}
     end
@@ -42,15 +42,16 @@ defmodule ParseItNumTest do
   end
 
   property "a number can contain thousands separators and decimals" do
-    check all left <- string(?1..?9, min_length: 1, max_length: 3),
+    check all sign <- signs(),
+              left <- string(?1..?9, min_length: 1, max_length: 3),
               right <- string(?0..?9, length: 3),
               decimal <- string(?0..?9, min_length: 1) do
-      num = String.to_float("#{left}#{right}.#{decimal}")
-      assert NumberParser.parse("#{left}.#{right},#{decimal}") == {:ok, num}
+      num = String.to_float("#{sign}#{left}#{right}.#{decimal}")
+      assert NumberParser.parse("#{sign}#{left}.#{right},#{decimal}") == {:ok, num}
     end
   end
 
   defp signs do
-    frequency([{1, constant("-")}, {1, constant("+")}])
+    one_of([constant("-"), constant("+")])
   end
 end
