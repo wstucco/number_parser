@@ -4,7 +4,8 @@ defmodule ParseItNumTest do
   doctest NumberParser
 
   property "an integer is alwaysed parsed as integer" do
-    check all num <- positive_integer() do
+    check all num <- integer() do
+      IO.inspect(num)
       assert NumberParser.parse("#{num}") == {:ok, num}
     end
   end

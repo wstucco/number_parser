@@ -11,6 +11,7 @@ defmodule NumberParser do
   thousands_sep = string(".")
   num_range = [?0..?9]
   num_string = utf8_string(num_range, min: 1)
+  integer_part = concat(optional(string("-")), int)
   e_part = string("e") |> concat(int)
   decimal_part = decimal_sep |> concat(num_string) |> concat(optional(e_part))
 
@@ -21,10 +22,10 @@ defmodule NumberParser do
   defcombinatorp(
     :number,
     choice([
-      int |> concat(decimal_part),
+      integer_part |> concat(decimal_part),
       thousands_part |> concat(decimal_part),
       thousands_part,
-      int
+      integer_part
     ])
     |> eos()
     |> post_traverse(:to_number_value)
