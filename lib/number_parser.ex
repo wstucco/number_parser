@@ -21,8 +21,8 @@ defmodule NumberParser do
   decimal_part = decimal_sep |> concat(num_string) |> concat(e_part)
 
   thousands_start = concat(sign_part, integer(min: 1, max: 3))
-  thousad_triplet = ascii_string(num_range, 3)
-  thousands_triplets = times(ignore(thousands_sep) |> concat(thousad_triplet), min: 1)
+  thousand_triplet = ascii_string(num_range, 3)
+  thousands_triplets = times(ignore(thousands_sep) |> concat(thousand_triplet), min: 1)
   thousands_part = thousands_start |> concat(thousands_triplets)
 
   defcombinatorp(
